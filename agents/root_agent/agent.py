@@ -1,3 +1,9 @@
+import sys
+import os
+
+# Add root_agent directory to path so sub_agents can be found
+sys.path.insert(0, os.path.dirname(__file__))
+
 from google.adk.agents import Agent
 from google.adk.agents.sequential_agent import SequentialAgent
 from sub_agents.intake_agent.agent import intake_agent
