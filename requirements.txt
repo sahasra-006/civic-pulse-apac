@@ -1,0 +1,4 @@
+google-adk==2.3.0 
+google-cloud-firestore 
+google-cloud-bigquery 
+google-cloud-storage 
