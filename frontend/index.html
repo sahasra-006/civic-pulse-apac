@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CivicPulse — Complaint Triage System</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: 'Segoe UI', Arial, sans-serif; background: #f4f6f9; color: #1a1a2e; min-height: 100vh; }
+header { background: #1a3a5c; color: white; padding: 0 32px; height: 56px; display: flex; align-items: center; justify-content: space-between; border-bottom: 3px solid #e8a020; }
+header .brand { display: flex; align-items: center; gap: 12px; }
+header .brand h1 { font-size: 18px; font-weight: 600; }
+header .brand span { font-size: 12px; color: #a8c4e0; border-left: 1px solid #2d5a80; padding-left: 12px; }
+header .status { font-size: 12px; color: #6ee7b7; display: flex; align-items: center; gap: 6px; }
+header .status::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #6ee7b7; display: inline-block; }
+nav { background: #1e4976; padding: 0 32px; display: flex; border-bottom: 1px solid #2d5a80; }
+nav a { color: #a8c4e0; text-decoration: none; font-size: 13px; padding: 12px 20px; display: block; border-bottom: 2px solid transparent; }
+nav a:hover { color: white; background: rgba(255,255,255,0.07); }
+nav a.active { color: white; border-bottom-color: #e8a020; }
+.container { max-width: 1200px; margin: 0 auto; padding: 24px 32px; }
+.page-title { font-size: 15px; font-weight: 600; color: #1a3a5c; margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid #dde3ea; }
+.page-title span { font-weight: 400; font-size: 13px; color: #6b7a8d; margin-left: 8px; }
+.info-bar { background: #e8f0fb; border: 1px solid #c5d8f4; border-radius: 3px; padding: 8px 12px; font-size: 12px; color: #1a3a5c; margin-bottom: 20px; }
+.grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-full { grid-column: 1 / -1; }
+.panel { background: white; border: 1px solid #dde3ea; border-radius: 4px; }
+.panel-header { padding: 11px 16px; border-bottom: 1px solid #dde3ea; font-size: 12px; font-weight: 600; color: #1a3a5c; text-transform: uppercase; letter-spacing: 0.6px; background: #f8f9fb; }
+.panel-body { padding: 16px; }
+label { display: block; font-size: 12px; font-weight: 600; color: #3d4f63; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
+textarea, input[type="text"] { width: 100%; border: 1px solid #c8d0db; border-radius: 3px; padding: 9px 11px; font-size: 13px; font-family: inherit; color: #1a1a2e; background: #fafbfc; outline: none; resize: vertical; }
+textarea { min-height: 90px; }
+textarea:focus, input[type="text"]:focus { border-color: #1a3a5c; background: white; }
+.btn-primary { background: #1a3a5c; color: white; border: none; border-radius: 3px; padding: 9px 20px; font-size: 13px; font-weight: 600; cursor: pointer; width: 100%; margin-top: 12px; }
+.btn-primary:hover { background: #143050; }
+.btn-primary:disabled { background: #8a9bb0; cursor: not-allowed; }
+.output-box { margin-top: 12px; background: #f8f9fb; border: 1px solid #dde3ea; border-radius: 3px; padding: 11px; font-size: 12px; font-family: 'Consolas', monospace; color: #3d4f63; min-height: 72px; white-space: pre-wrap; line-height: 1.6; }
+.result-table { width: 100%; border-collapse: collapse; }
+.result-table tr { border-bottom: 1px solid #f0f2f5; }
+.result-table tr:last-child { border-bottom: none; }
+.result-table td { padding: 9px 0; font-size: 13px; vertical-align: top; }
+.result-table td:first-child { color: #6b7a8d; width: 45%; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.4px; }
+.result-table td:last-child { color: #1a1a2e; font-weight: 500; text-align: right; }
+.badge { display: inline-block; padding: 2px 8px; border-radius: 2px; font-size: 11px; font-weight: 600; letter-spacing: 0.3px; }
+.badge-high { background: #fde8e8; color: #b91c1c; border: 1px solid #fca5a5; }
+.badge-med { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+.badge-low { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+.badge-warn { background: #fde8e8; color: #b91c1c; border: 1px solid #fca5a5; }
+.badge-ok { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+.divider { height: 1px; background: #dde3ea; margin: 14px 0; }
+.chat-log { height: 220px; overflow-y: auto; border: 1px solid #dde3ea; border-radius: 3px; background: #fafbfc; padding: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
+.msg { font-size: 13px; padding: 8px 11px; border-radius: 3px; max-width: 88%; line-height: 1.5; }
+.msg-user { background: #e8f0fb; color: #1a3a5c; align-self: flex-end; border: 1px solid #c5d8f4; }
+.msg-agent { background: white; color: #2d3748; align-self: flex-start; border: 1px solid #dde3ea; }
+.msg-hint { color: #8a9bb0; font-size: 12px; font-style: italic; align-self: flex-start; }
+.chat-row { display: flex; gap: 8px; }
+.chat-row input { flex: 1; }
+.btn-send { background: #1a3a5c; color: white; border: none; border-radius: 3px; padding: 9px 16px; font-size: 13px; font-weight: 600; cursor: pointer; }
+.btn-send:hover { background: #143050; }
+.spinner { display: inline-block; width: 11px; height: 11px; border: 2px solid rgba(26,58,92,0.2); border-top-color: #1a3a5c; border-radius: 50%; animation: spin 0.65s linear infinite; vertical-align: middle; margin-right: 5px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="brand">
+    <h1>CivicPulse</h1>
+    <span>Community Complaint Triage &amp; Decision Intelligence</span>
+  </div>
+  <div class="status">System operational</div>
+</header>
+
+<nav>
+  <a href="#" class="active">Complaint Triage</a>
+  <a href="#" onclick="window.open('https://datastudio.google.com/s/r2hc5YvRhS0','_blank'); return false;">Analytics Dashboard</a>
+</nav>
+
+<div class="container">
+  <div class="page-title">
+    New Complaint Entry
+    <span>Submit a complaint to classify, detect anomalies, and route to the correct department</span>
+  </div>
+
+  <div class="info-bar">
+    Complaints are processed through a 3-stage AI pipeline: Classification &rarr; Anomaly Detection &rarr; Priority Scoring. Results are saved to the live operations database automatically.
+  </div>
+
+  <div class="grid">
+    <div class="panel">
+      <div class="panel-header">Complaint Details</div>
+      <div class="panel-body">
+        <label for="complaintText">Description</label>
+        <textarea id="complaintText" placeholder="Describe the civic issue in detail. Include location and context. E.g. Large pothole on MG Road near Bus Stop No. 4, causing vehicle damage."></textarea>
+        <button class="btn-primary" id="submitBtn" onclick="submitComplaint()">Submit for Triage</button>
+        <div class="divider"></div>
+        <label>Raw pipeline output</label>
+        <div class="output-box" id="rawOutput">Waiting for complaint submission...</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-header">Triage Result</div>
+      <div class="panel-body">
+        <table class="result-table">
+          <tr><td>Complaint ID</td><td id="rId">—</td></tr>
+          <tr><td>Category</td><td id="rCat">—</td></tr>
+          <tr><td>Ward / Location</td><td id="rWard">—</td></tr>
+          <tr><td>Severity</td><td id="rSev">—</td></tr>
+          <tr><td>Priority Score</td><td id="rPri">—</td></tr>
+          <tr><td>Department</td><td id="rDept">—</td></tr>
+          <tr><td>Anomaly Detected</td><td id="rAnom">—</td></tr>
+          <tr><td>Est. Resolution</td><td id="rDays">—</td></tr>
+          <tr><td>Recommended Action</td><td id="rAction" style="font-size:12px">—</td></tr>
+          <tr><td>Status</td><td><span class="badge" id="rStatus">—</span></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="panel grid-full">
+      <div class="panel-header">Analytics Query — Natural Language</div>
+      <div class="panel-body">
+        <div class="chat-log" id="chatLog">
+          <div class="msg msg-hint">Query the complaint database in plain English. Try: "What are the most common complaints this week?" or "Which ward has the highest number of complaints?"</div>
+        </div>
+        <div class="chat-row">
+          <input type="text" id="chatInput" placeholder="Ask about complaint trends, ward statistics, anomalies..." onkeydown="if(event.key==='Enter') sendChat()"/>
+          <button class="btn-send" onclick="sendChat()">Query</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const API = "https://civic-pulse-agent-19402659073.us-central1.run.app";
+
+async function callAgent(msg) {
+  const sr = await fetch(`${API}/apps/root_agent/users/user/sessions`, {
+    method: 'POST',
+    headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({state: {}})
+  });
+  const sess = await sr.json();
+  const sid = sess.id;
+
+  return new Promise((resolve) => {
+    let out = '';
+    fetch(`${API}/run_sse`, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        app_name: 'root_agent',
+        user_id: 'user',
+        session_id: sid,
+        new_message: { role: 'user', parts: [{ text: msg }] },
+        streaming: false
+      })
+    }).then(async resp => {
+      const reader = resp.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = '';
+      while (true) {
+        const {done, value} = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(value, {stream: true});
+        const lines = buffer.split('\n');
+        buffer = lines.pop();
+        for (const line of lines) {
+          if (line.startsWith('data: ')) {
+            try {
+              const data = JSON.parse(line.slice(6));
+              if (data.content?.parts) {
+                data.content.parts.forEach(p => { if (p.text) out += p.text; });
+              }
+            } catch {}
+          }
+        }
+      }
+      resolve(out || 'No response');
+    }).catch(e => resolve('Error: ' + e.message));
+  });
+}
+
+function parseAll(text) {
+  const m = text.match(/\{[\s\S]*?\}/g) || [];
+  const c = {};
+  m.forEach(j => { try { Object.assign(c, JSON.parse(j)); } catch {} });
+  return c;
+}
+
+function priBadge(s) {
+  if (s >= 70) return `<span class="badge badge-high">${s} / 100 — High</span>`;
+  if (s >= 40) return `<span class="badge badge-med">${s} / 100 — Medium</span>`;
+  return `<span class="badge badge-low">${s} / 100 — Low</span>`;
+}
+
+async function submitComplaint() {
+  const text = document.getElementById('complaintText').value.trim();
+  if (!text) return;
+  const btn = document.getElementById('submitBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner"></span>Processing...';
+  document.getElementById('rawOutput').textContent = 'Sending to triage pipeline...';
+  try {
+    const resp = await callAgent(text);
+    document.getElementById('rawOutput').textContent = resp;
+    const d = parseAll(resp);
+    document.getElementById('rId').textContent = 'CP-' + Date.now().toString().slice(-6);
+    document.getElementById('rCat').textContent = (d.category || '—').replace('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
+    document.getElementById('rWard').textContent = d.ward || '—';
+    document.getElementById('rSev').textContent = d.severity ? d.severity + ' / 5' : '—';
+    document.getElementById('rPri').innerHTML = d.priority_score ? priBadge(d.priority_score) : '—';
+    document.getElementById('rDept').textContent = d.department || '—';
+    document.getElementById('rAnom').innerHTML = d.anomaly ? '<span class="badge badge-warn">Yes — pattern spike detected</span>' : '<span class="badge badge-ok">No</span>';
+    document.getElementById('rDays').textContent = d.estimated_resolution_days ? d.estimated_resolution_days + ' working days' : '—';
+    document.getElementById('rAction').textContent = d.recommended_action || '—';
+    const st = document.getElementById('rStatus');
+    st.textContent = 'Dispatched'; st.className = 'badge badge-ok';
+  } catch(e) { document.getElementById('rawOutput').textContent = 'Error: ' + e.message; }
+  btn.disabled = false; btn.textContent = 'Submit for Triage';
+}
+
+async function sendChat() {
+  const inp = document.getElementById('chatInput');
+  const log = document.getElementById('chatLog');
+  const q = inp.value.trim();
+  if (!q) return;
+  log.innerHTML += `<div class="msg msg-user">${q}</div>`;
+  log.innerHTML += `<div class="msg msg-agent" id="typing"><span class="spinner"></span>Querying database...</div>`;
+  inp.value = ''; log.scrollTop = log.scrollHeight;
+  try {
+    const resp = await callAgent(q);
+    document.getElementById('typing').remove();
+    let display = resp;
+    try { const m = resp.match(/\{[\s\S]*\}/); if (m) { const p = JSON.parse(m[0]); if (p.answer) display = p.answer; if (p.insight) display += '\n\nInsight: ' + p.insight; } } catch {}
+    log.innerHTML += `<div class="msg msg-agent">${display}</div>`;
+  } catch(e) { document.getElementById('typing')?.remove(); log.innerHTML += `<div class="msg msg-agent">Error: ${e.message}</div>`; }
+  log.scrollTop = log.scrollHeight;
+}
+</script>
+</body>
+</html>
