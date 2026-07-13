@@ -1,0 +1,17 @@
+FROM python:3.11-slim
+WORKDIR /app
+
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+
+COPY agents/ ./agents/
+
+# NOTE: firebase-key.json is intentionally NOT copied here (it's git-ignored).
+# On Render, upload it via "Secret Files" (Environment tab) with the path
+# /etc/secrets/firebase-key.json -- Render mounts it there automatically at runtime.
+ENV GOOGLE_APPLICATION_CREDENTIALS=/etc/secrets/firebase-key.json
+ENV PORT=8080
+EXPOSE 8080
+
+# Render (and most free hosts) inject the port to bind to via $PORT.
+CMD adk api_server --host 0.0.0.0 --port ${PORT} --allow_origins="*" agents/

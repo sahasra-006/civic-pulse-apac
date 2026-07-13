@@ -1,3 +1,4 @@
+import os
 import uuid
 from datetime import datetime
 from google.cloud import firestore
@@ -5,7 +6,8 @@ from google.cloud import firestore
 def save_complaint(complaint_data: dict) -> str:
     """Save a processed complaint to Firestore."""
     try:
-        db = firestore.Client(project="civic-pulse-apac", database="civic-pulse-db")
+        project_id = os.environ.get("GOOGLE_CLOUD_PROJECT")
+        db = firestore.Client(project=project_id)
         complaint_id = str(uuid.uuid4())
         
         doc_data = {
