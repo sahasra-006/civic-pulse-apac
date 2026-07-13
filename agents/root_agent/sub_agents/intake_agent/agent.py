@@ -2,7 +2,7 @@ from google.adk.agents import Agent
 
 intake_agent = Agent(
     name="intake_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.5-flash",
     description="Classifies civic complaints into categories and severity levels.",
     instruction="""You are a civic complaint intake officer. 
     When given a complaint, extract and return ONLY a JSON object with these exact keys:

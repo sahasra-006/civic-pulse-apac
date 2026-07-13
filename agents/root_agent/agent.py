@@ -39,7 +39,7 @@ complaint_pipeline = SequentialAgent(
 
 root_agent = Agent(
     name="civic_root_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.5-flash",
     description="Orchestrates civic complaint triage system.",
     instruction=(
         "You are the orchestrator of a civic complaint triage system for smart cities. "

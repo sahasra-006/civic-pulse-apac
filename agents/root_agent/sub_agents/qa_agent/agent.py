@@ -2,7 +2,7 @@ from google.adk.agents import Agent
 
 qa_agent = Agent(
     name="qa_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.5-flash",
     description="Answers natural language questions about civic complaint data and trends.",
     instruction="""You are a civic data analyst that answers questions about complaint data.
     You will receive natural language questions about civic complaints in the city.

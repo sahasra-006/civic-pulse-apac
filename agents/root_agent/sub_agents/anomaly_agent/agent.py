@@ -2,7 +2,7 @@ from google.adk.agents import Agent
 
 anomaly_agent = Agent(
     name="anomaly_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.5-flash",
     description="Detects if a complaint is part of an unusual pattern or spike.",
     instruction="""You are a civic data analyst that detects anomalies in complaint patterns.
     You will receive a complaint category and ward/area.

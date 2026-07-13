@@ -28,7 +28,7 @@ firestore_tool = FunctionTool(write_to_firestore)
 
 priority_agent = Agent(
     name="priority_agent",
-    model="gemini-2.5-flash",
+    model="gemini-3.5-flash",
     description="Computes priority score and routes complaint to correct department.",
     instruction=(
         "You are a civic complaint routing officer. "
